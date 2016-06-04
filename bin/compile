@@ -2,6 +2,19 @@
 
 # bin/compile <build-dir> <cache-dir> <env-dir>
 
+#
+# s3fs version
+#
+fuse_version_major=2
+fuse_version_minor=9.4
+s3fs_version=1.78
+
+fuse_archive_filename=fuse-${fuse_version_major}.${fuse_version_minor}.tar.gz
+fuse_download_url=http://downloads.sourceforge.net/fuse/fuse-2.9.4.tar.gz
+
+s3fs_archive_filename=s3fs-fuse-${s3fs_version}.tar.gz
+s3fs_download_url=https://codeload.github.com/s3fs-fuse/s3fs-fuse/tar.gz/v${s3fs_version}
+
 # fail hard
 set -o pipefail
 # fail harder
@@ -15,6 +28,26 @@ cache_dir=$2/php
 mkdir -p "$cache_dir"
 env_dir=${3:-} # Anvil has none
 bp_dir=$(cd $(dirname $0); cd ..; pwd)
+
+#
+# s3fs main
+#
+export_env_dir $env_dir
+rm -rvf $build_dir/s3fs/s3_built
+if [ ! -f "$build_dir/s3fs/s3_built" ]; then
+
+  #
+  # download
+  #
+  rm -rf /tmp/fuse/
+  mkdir -p /tmp/fuse/
+  wget -O /tmp/fuse/fuse-2.9.4.tar.gz "https://github.com/libfuse/libfuse/releases/download/fuse_2_9_4/fuse-2.9.4.tar.gz"
+  tar xvf/tmp/fuse/fuse-2.9.4.tar.gz -C /tmp/fuse
+
+  rm -rf /tmp/s3fs/
+  mkdir -p /tmp/s3fs/
+  curl -s ${s3fs_download_url} -o /tmp/s3fs/${s3fs_archive_filename}
+  tar -xvf /tmp/s3fs/${s3fs_archive_filename} -C /tmp/s3fs
 
 # convenience functions
 source $bp_dir/bin/util/common.sh
